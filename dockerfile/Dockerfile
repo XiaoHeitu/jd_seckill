@@ -8,6 +8,9 @@ ENV TIMEZONE Asia/Shanghai
 COPY docker-python-entrypoint /usr/local/bin/
 COPY qrcode /usr/local/bin/
 
+COPY docker-python-entrypoint /app
+COPY qrcode /app
+
 RUN set -ex; \
     ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
       && echo $TIMEZONE > /etc/timezone; \
@@ -69,6 +72,8 @@ RUN set -ex; \
       \
       chmod +x /usr/local/bin/docker-python-entrypoint; \
       chmod +x /usr/local/bin/qrcode; \
+      chmod +x /app/docker-python-entrypoint; \
+      chmod +x /app/qrcode; \
       \
       # clean apt cache.
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
@@ -77,7 +82,7 @@ RUN set -ex; \
 
 WORKDIR /app
 
-ENTRYPOINT ["python"]
+ENTRYPOINT ["docker-python-entrypoint"]
 
-CMD ["main.py"]
+CMD ["seckill"]
       
