@@ -69,6 +69,7 @@ RUN set -ex; \
       \
       chmod +x /usr/local/bin/docker-python-entrypoint; \
       chmod +x /usr/local/bin/qrcode; \
+	  export PATH=/usr/local/bin:$PATH \
       \
       # clean apt cache.
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
