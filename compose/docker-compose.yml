@@ -9,8 +9,8 @@ services:
     environment:
       # eid, fp参数必须填写，具体请参考 wiki-常见问题
       # 随意填写可能导致订单无法提交等问题
-      - JD_SECKILL_EID=
-      - JD_SECKILL_FP=
+      - JD_SECKILL_EID=2VYPCNVAIWUIWFRDWBIHBPNDXG76RK6VKAMUVWHBV2JDHRO3GDVJI2DHIG5NJ4CBNNNI5MOHPKY2CZPA7TJRP5SVN4
+      - JD_SECKILL_FP=6b8e038ac873d5c746a210d9b5860508
       # 商品id
       # 已经是茅台的sku_id了
       - JD_SECKILL_SKU_ID=100012043978
