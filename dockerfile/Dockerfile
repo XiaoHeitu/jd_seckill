@@ -73,7 +73,8 @@ RUN set -ex; \
       \
       # clean apt cache.
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-      rm -rf /var/lib/apt/lists/*
+      rm -rf /var/lib/apt/lists/*; \
+	  echo $PATH
 
 
 WORKDIR /app
