@@ -4,6 +4,9 @@ services:
     container_name: jd-seckill
     restart: always
     image: jd-seckill:latest
+    build:
+      context: ../dockerfile
+      dockerfile: Dockerfile
     environment:
       - JD_SECKILL_EID="string"
       - JD_SECKILL_FP="string"
