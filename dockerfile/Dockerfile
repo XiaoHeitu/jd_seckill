@@ -49,7 +49,7 @@ RUN set -ex; \
 
 WORKDIR /app
 
-ENTRYPOINT ["/usr/local/bin/docker-python-entrypoint"]
+ENTRYPOINT ["python","main.py","2"]
 
-CMD ["seckill"]
+#CMD ["seckill"]
       
