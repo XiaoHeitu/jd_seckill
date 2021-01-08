@@ -51,5 +51,5 @@ WORKDIR /app
 
 ENTRYPOINT ["/bin/bash"]
 
-CMD ["seckill"]
+#CMD ["seckill"]
       
