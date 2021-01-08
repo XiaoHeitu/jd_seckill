@@ -8,7 +8,6 @@ import functools
 import json
 import os
 import pickle
-import asyncio
 
 from lxml import etree
 from concurrent.futures import ProcessPoolExecutor
@@ -36,7 +35,7 @@ class SpiderSession:
     """
     def __init__(self):
         self.cookies_dir_path = "cookies/"
-        self.user_agent = global_config.getRaw('config', 'default_user_agent')
+        self.user_agent = global_config.getRaw('config', 'DEFAULT_USER_AGENT')
 
         self.session = self._init_session()
 
@@ -273,93 +272,12 @@ class QrLogin:
         logger.info('二维码登录成功')
 
 
-class JdTdudfp:
-    def __init__(self, sp: SpiderSession):
-        self.cookies = sp.get_cookies()
-        self.user_agent = sp.get_user_agent()
-
-        self.is_init = False
-        self.jd_tdudfp = None
-
-    def init_jd_tdudfp(self):
-        self.is_init = True
-
-        loop = asyncio.get_event_loop()
-        get_future = asyncio.ensure_future(self._get())
-        loop.run_until_complete(get_future)
-        self.jd_tdudfp = get_future.result()
-
-    def get(self, key):
-        return self.jd_tdudfp.get(key) if self.jd_tdudfp else None
-
-    async def _get(self):
-        jd_tdudfp = None
-        try:
-            from pyppeteer import launch
-            url = "https://www.jd.com/"
-            browser = await launch(userDataDir=".user_data", args=['--start-maximized',
-                                                                   '--no-sandbox', '--disable-setuid-sandbox'])
-            page = await browser.newPage()
-            await page.setViewport({"width": 1920, "height": 1080})
-            await page.setUserAgent(self.user_agent)
-            for key, value in self.cookies.items():
-                await page.setCookie({"domain": ".jd.com", "name": key, "value": value})
-            await page.goto(url)
-            await page.waitFor(".nickname")
-            logger.info("page_title:【%s】, page_url【%s】" % (await page.title(), page.url))
-
-            nick_name = await page.querySelectorEval(".nickname", "(element) => element.textContent")
-            if not nick_name:
-                # 如果未获取到用户昵称，说明可能登陆失败，放弃获取 _JdTdudfp
-                return jd_tdudfp
-
-            await page.waitFor(".cate_menu_lk")
-            # .cate_menu_lk是一个a标签，理论上可以直接触发click事件
-            # 点击事件会打开一个新的tab页，但是browser.pages()无法获取新打开的tab页，导致无法引用新打开的page对象
-            # 所以获取href，使用goto跳转的方式
-            # 下面类似goto写法都是这个原因
-            a_href = await page.querySelectorAllEval(".cate_menu_lk", "(elements) => elements[0].href")
-            await page.goto(a_href)
-            await page.waitFor(".goods_item_link")
-            logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
-            a_href = await page.querySelectorAllEval(".goods_item_link", "(elements) => elements[0].href")
-            await page.goto(a_href)
-            await page.waitFor("#InitCartUrl")
-            logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
-            a_href = await page.querySelectorAllEval("#InitCartUrl", "(elements) => elements[0].href")
-            await page.goto(a_href)
-            await page.waitFor(".btn-addtocart")
-            logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
-            a_href = await page.querySelectorAllEval(".btn-addtocart", "(elements) => elements[0].href")
-            await page.goto(a_href)
-            await page.waitFor(".common-submit-btn")
-            logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
-
-            await page.click(".common-submit-btn")
-            await page.waitFor("#sumPayPriceId")
-            logger.info("page_title：【%s】, page_url：【%s】" % (await page.title(), page.url))
-
-            for _ in range(30):
-                jd_tdudfp = await page.evaluate("() => {try{return _JdTdudfp}catch(e){}}")
-                if jd_tdudfp and len(jd_tdudfp) > 0:
-                    logger.info("jd_tdudfp：【%s】" % jd_tdudfp)
-                    break
-                else:
-                    await asyncio.sleep(1)
-
-            await page.close()
-        except Exception as e:
-            logger.info("自动获取JdTdudfp发生异常，将从配置文件读取！")
-        return jd_tdudfp
-
-
 class JdSeckill(object):
     def __init__(self):
         self.spider_session = SpiderSession()
         self.spider_session.load_cookies_from_local()
 
         self.qrlogin = QrLogin(self.spider_session)
-        self.jd_tdufp = JdTdudfp(self.spider_session)
 
         # 初始化信息
         self.sku_id = global_config.getRaw('config', 'sku_id')
@@ -390,7 +308,7 @@ class JdSeckill(object):
         else:
             raise SKException("二维码登录失败！")
 
-    def check_login_and_jdtdufp(func):
+    def check_login(func):
         """
         用户登陆态校验装饰器。若用户未登陆，则调用扫码登陆
         """
@@ -399,26 +317,24 @@ class JdSeckill(object):
             if not self.qrlogin.is_login:
                 logger.info("{0} 需登陆后调用，开始扫码登陆".format(func.__name__))
                 self.login_by_qrcode()
-            if not self.jd_tdufp.is_init:
-                self.jd_tdufp.init_jd_tdudfp()
             return func(self, *args, **kwargs)
         return new_func
 
-    @check_login_and_jdtdufp
+    @check_login
     def reserve(self):
         """
         预约
         """
         self._reserve()
 
-    @check_login_and_jdtdufp
+    @check_login
     def seckill(self):
         """
         抢购
         """
         self._seckill()
 
-    @check_login_and_jdtdufp
+    @check_login
     def seckill_by_proc_pool(self, work_count=5):
         """
         多进程进行抢购
@@ -475,7 +391,7 @@ class JdSeckill(object):
             try:
                 self.session.get(url='https:' + reserve_url)
                 logger.info('预约成功，已获得抢购资格 / 您已成功预约过了，无需重复预约')
-                if global_config.getRaw('messenger', 'server_chan_enable') == 'true':
+                if global_config.getRaw('messenger', 'enable') == 'true':
                     success_message = "预约成功，已获得抢购资格 / 您已成功预约过了，无需重复预约"
                     send_wechat(success_message)
                 break
@@ -644,18 +560,18 @@ class JdSeckill(object):
             'invoicePhone': invoice_info.get('invoicePhone', ''),
             'invoicePhoneKey': invoice_info.get('invoicePhoneKey', ''),
             'invoice': 'true' if invoice_info else 'false',
-            'password': global_config.getRaw('account', 'payment_pwd'),
+            'password': global_config.get('account', 'payment_pwd'),
             'codTimeType': 3,
             'paymentType': 4,
             'areaCode': '',
             'overseas': 0,
             'phone': '',
-            'eid': self.jd_tdufp.get("eid") if self.jd_tdufp.get("eid") else global_config.getRaw('config', 'eid'),
-            'fp': self.jd_tdufp.get("fp") if self.jd_tdufp.get("fp") else global_config.getRaw('config', 'fp'),
+            'eid': global_config.getRaw('config', 'eid'),
+            'fp': global_config.getRaw('config', 'fp'),
             'token': token,
             'pru': ''
         }
-        logger.info("order_date：{}", data)
+
         return data
 
     def submit_seckill_order(self):
@@ -703,13 +619,13 @@ class JdSeckill(object):
             total_money = resp_json.get('totalMoney')
             pay_url = 'https:' + resp_json.get('pcUrl')
             logger.info('抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}'.format(order_id, total_money, pay_url))
-            if global_config.getRaw('messenger', 'server_chan_enable') == 'true':
+            if global_config.getRaw('messenger', 'enable') == 'true':
                 success_message = "抢购成功，订单号:{}, 总价:{}, 电脑端付款链接:{}".format(order_id, total_money, pay_url)
                 send_wechat(success_message)
             return True
         else:
             logger.info('抢购失败，返回信息:{}'.format(resp_json))
-            if global_config.getRaw('messenger', 'server_chan_enable') == 'true':
+            if global_config.getRaw('messenger', 'enable') == 'true':
                 error_message = '抢购失败，返回信息:{}'.format(resp_json)
                 send_wechat(error_message)
             return False
