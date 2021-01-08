@@ -36,9 +36,6 @@ RUN set -ex; \
         \
       pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/; \
       \
-      chmod +x /usr/local/bin/docker-python-entrypoint; \
-      chmod +x /usr/local/bin/qrcode; \
-      \
       # clean apt cache.
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
       rm -rf /var/lib/apt/lists/*
