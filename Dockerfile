@@ -7,7 +7,7 @@ ENV TIMEZONE Asia/Shanghai
 
 COPY docker-python-entrypoint /usr/local/bin/
 COPY qrcode /usr/local/bin/
-COPY ../ /app
+COPY . /app
 
 RUN set -ex; \
     ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
