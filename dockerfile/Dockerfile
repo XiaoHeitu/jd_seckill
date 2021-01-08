@@ -47,9 +47,9 @@ COPY qrcode /app
 
 RUN chmod +x /app/docker-python-entrypoint
 RUN chmod +x /app/qrcode
+RUN "export PATH=.:$PATH"
 
 ENTRYPOINT ["docker-python-entrypoint"]
-#ENTRYPOINT ["python"]
 
 CMD ["seckill"]
       
