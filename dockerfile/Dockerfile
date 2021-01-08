@@ -51,5 +51,5 @@ WORKDIR /app
 
 ENTRYPOINT ["/usr/local/bin/docker-python-entrypoint"]
 
-#CMD ["seckill"]
+CMD ["seckill"]
       
