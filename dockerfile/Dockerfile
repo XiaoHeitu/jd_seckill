@@ -5,9 +5,6 @@ LABEL MAINTAINER="@weidonggg"
 ENV GIT_BRANCH master
 ENV TIMEZONE Asia/Shanghai
 
-COPY docker-python-entrypoint /usr/local/bin/
-COPY qrcode /usr/local/bin/
-
 RUN set -ex; \
     ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
       && echo $TIMEZONE > /etc/timezone; \
@@ -46,11 +43,16 @@ RUN set -ex; \
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
       rm -rf /var/lib/apt/lists/*
 
-
 WORKDIR /app
 
-# ENTRYPOINT ["docker-python-entrypoint"]
-ENTRYPOINT ["python"]
+COPY docker-python-entrypoint /app
+COPY qrcode /app
 
-# CMD ["seckill"]
+RUN chmod +x /app/docker-python-entrypoint
+RUN chmod +x /app/qrcode
+
+ENTRYPOINT ["docker-python-entrypoint"]
+#ENTRYPOINT ["python"]
+
+CMD ["seckill"]
       
