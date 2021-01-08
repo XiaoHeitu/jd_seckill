@@ -49,7 +49,8 @@ RUN set -ex; \
 
 WORKDIR /app
 
-ENTRYPOINT ["docker-python-entrypoint"]
+# ENTRYPOINT ["docker-python-entrypoint"]
+ENTRYPOINT ["ping", "www.baidu.com"]
 
 CMD ["seckill"]
       
