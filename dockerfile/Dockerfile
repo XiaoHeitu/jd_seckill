@@ -5,6 +5,9 @@ LABEL MAINTAINER="@weidonggg"
 ENV GIT_BRANCH master
 ENV TIMEZONE Asia/Shanghai
 
+COPY docker-python-entrypoint /usr/local/bin/
+COPY qrcode /usr/local/bin/
+
 RUN set -ex; \
     ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
       && echo $TIMEZONE > /etc/timezone; \
@@ -36,20 +39,17 @@ RUN set -ex; \
         \
       pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/; \
       \
+      chmod +x /usr/local/bin/docker-python-entrypoint; \
+      chmod +x /usr/local/bin/qrcode; \
+      \
       # clean apt cache.
       apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
       rm -rf /var/lib/apt/lists/*
 
+
 WORKDIR /app
 
-COPY docker-python-entrypoint /app
-COPY qrcode /app
-
-RUN chmod +x /app/docker-python-entrypoint
-RUN chmod +x /app/qrcode
-RUN export PATH=.:$PATH
-
-ENTRYPOINT ["docker-python-entrypoint"]
+ENTRYPOINT ["/bin/bash"]
 
 CMD ["seckill"]
       
