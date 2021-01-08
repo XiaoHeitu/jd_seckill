@@ -50,7 +50,7 @@ RUN set -ex; \
 WORKDIR /app
 
 # ENTRYPOINT ["docker-python-entrypoint"]
-ENTRYPOINT ["top"]
+ENTRYPOINT ["python"]
 
 # CMD ["seckill"]
       
