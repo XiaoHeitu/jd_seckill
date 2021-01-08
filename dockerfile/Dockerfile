@@ -68,8 +68,8 @@ RUN set -ex; \
                     .run_until_complete(launch(args=[\"--no-sandbox\", \"--disable-setuid-sandbox\"]))"; \
       \
       chmod +x /usr/local/bin/docker-python-entrypoint; \
-      chmod +x /usr/local/bin/qrcode; \	  
-      \
+      chmod +x /usr/local/bin/qrcode; 	  
+      
       # clean apt cache.
       # apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
       # rm -rf /var/lib/apt/lists/*; \
