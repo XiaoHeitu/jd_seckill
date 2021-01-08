@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     jd_seckill = JdSeckill()
 	choice_function = '0'
-	if len(sys.argv) > 1:	
+	if len(sys.argv) == 1:	
 		choice_function = input('请选择:')
 	else
 		choice_function = sys.argv[1]
