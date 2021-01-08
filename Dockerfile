@@ -50,7 +50,7 @@ RUN set -ex; \
 
 WORKDIR /app
 
-ENTRYPOINT ["python","main.py","2"]
+ENTRYPOINT ["python","seckill.py"]
 
 #CMD ["seckill"]
       
